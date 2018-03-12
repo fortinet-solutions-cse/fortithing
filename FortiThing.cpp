@@ -17,8 +17,19 @@ FortiThing::~FortiThing()
 
 float FortiThing::readTemperature()
 {
-
-   return 2.5;
+   Adafruit_BMP280 bme;
+   bool status;
+   status = bme.begin();  
+   if (!status) {
+      Serial.println("Could not find a valid BME280 sensor, check wiring!");
+      while (1);
+   }
+   float temp = bme.readTemperature();
+   Serial.print(temp);
+   Serial.println(" *C");
+   sprintf(buff, "%5.2f", temp);
+   client.publish("/miguel/roomtemp", buff);
+   return temp;
 }
 
 float FortiThing::readPressure()
@@ -99,6 +110,8 @@ bool FortiThing::setMqttUserPassword(const char* user, const char* password)
 
 bool FortiThing::publishTopic(const char* topic, float value)
 {
+	client.setServer(mqttServer, mqttPort);
+        client.publish("/miguel/roomtemp", "143");
 	return true;
 }
 
