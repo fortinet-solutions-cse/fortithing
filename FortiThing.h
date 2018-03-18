@@ -46,6 +46,9 @@ private:
 	
 	String ssid;
 	String password;
+  String mqtthost;
+  String mqttuser;
+  String mqttpassword;
 
 };
 

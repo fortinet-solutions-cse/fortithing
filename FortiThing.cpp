@@ -1,19 +1,17 @@
-#include <FortiThing.h>
+#include "FortiThing.h"
 #include <ESP8266WiFi.h>
+#include <Adafruit_BMP280.h>
 
 
-FortiThing::FortiThing()
+FortiThing::FortiThing():
+ssid(""),password(""),mqtthost(""),
+mqttuser(""),mqttpassword("")
 {
-	
 }
-
 
 FortiThing::~FortiThing()
-{
-	
-	
+{	
 }
-
 
 float FortiThing::readTemperature()
 {
@@ -24,22 +22,23 @@ float FortiThing::readTemperature()
       Serial.println("Could not find a valid BME280 sensor, check wiring!");
       while (1);
    }
-   float temp = bme.readTemperature();
-   Serial.print(temp);
-   Serial.println(" *C");
-   sprintf(buff, "%5.2f", temp);
-   client.publish("/miguel/roomtemp", buff);
-   return temp;
+   return bme.readTemperature();
 }
 
 float FortiThing::readPressure()
 {
-   return 1020;
+   Adafruit_BMP280 bme;
+   bool status;
+   status = bme.begin();  
+   if (!status) {
+      Serial.println("Could not find a valid BME280 sensor, check wiring!");
+      while (1);
+   }
+   return bme.readPressure();
 }
 
 float FortiThing::readHumidity()
 {
-		
    return 85.2;	
 }
 
@@ -98,24 +97,25 @@ bool FortiThing::connectWifi()
 }
 
 // MQTT methods
-bool FortiThing::setMqttHost(const char* host)
+bool FortiThing::setMqttHost(const String& host)
+{
+  mqtthost=host;
+	return true;
+}
+
+bool FortiThing::setMqttUserPassword(const String& user, const String& password)
+{
+  mqttuser=user;
+  mqttpassword=password;
+	return true;
+}
+
+bool FortiThing::publishTopic(const String& topic, float value)
 {
 	return true;
 }
 
-bool FortiThing::setMqttUserPassword(const char* user, const char* password)
-{
-	return true;
-}
-
-bool FortiThing::publishTopic(const char* topic, float value)
-{
-	client.setServer(mqttServer, mqttPort);
-        client.publish("/miguel/roomtemp", "143");
-	return true;
-}
-
-bool FortiThing::subscribeTopic(const char* topic, void (FortiThing::*func)(const char* payload))
+bool FortiThing::subscribeTopic(const String& topic, void (FortiThing::*func)(const String& payload))
 {
 	return true;
 }
