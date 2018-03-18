@@ -1,11 +1,10 @@
 #include "FortiThing.h"
 #include <ESP8266WiFi.h>
-#include <Adafruit_BMP280.h>
 
 
 FortiThing::FortiThing():
-ssid(""),password(""),mqtthost(""),
-mqttuser(""),mqttpassword("")
+ssid_(""),password_(""),mqtthost_(""),
+mqttuser_(""),mqttpassword_("")
 {
 }
 
@@ -15,26 +14,22 @@ FortiThing::~FortiThing()
 
 float FortiThing::readTemperature()
 {
-   Adafruit_BMP280 bme;
-   bool status;
-   status = bme.begin();  
-   if (!status) {
-      Serial.println("Could not find a valid BME280 sensor, check wiring!");
-      while (1);
+   if (startBmp())
+   {
+      return bmp_.readTemperature(); 
    }
-   return bme.readTemperature();
 }
 
 float FortiThing::readPressure()
 {
-   Adafruit_BMP280 bme;
+   Adafruit_BMP280 bmp;
    bool status;
-   status = bme.begin();  
+   status = bmp.begin();  
    if (!status) {
-      Serial.println("Could not find a valid BME280 sensor, check wiring!");
+      Serial.println("Could not find a valid BMP280 sensor, check wiring!");
       while (1);
    }
-   return bme.readPressure();
+   return bmp.readPressure();
 }
 
 float FortiThing::readHumidity()
@@ -65,19 +60,19 @@ bool FortiThing::setLedRGB2(int, int, int)
 // Wifi methods
 bool FortiThing::setWifiSSID(const String& ssid)
 {
-	this->ssid = ssid;
+	ssid_ = ssid;
 	return true;
 }
 
 bool FortiThing::setWifiPassword(const String& password)
 {
-	this->password = password;
+	password_ = password;
 	return true;
 }
 
 bool FortiThing::connectWifi()
 {
-  wl_status_t status1 = WiFi.begin(this->ssid.c_str(), this->password.c_str());
+  wl_status_t status1 = WiFi.begin(ssid_.c_str(), password_.c_str());
   wl_status_t status2 = WL_IDLE_STATUS;
   
   while ((status2 = WiFi.status()) != WL_CONNECTED) {
@@ -99,14 +94,14 @@ bool FortiThing::connectWifi()
 // MQTT methods
 bool FortiThing::setMqttHost(const String& host)
 {
-  mqtthost=host;
+  mqtthost_=host;
 	return true;
 }
 
 bool FortiThing::setMqttUserPassword(const String& user, const String& password)
 {
-  mqttuser=user;
-  mqttpassword=password;
+  mqttuser_=user;
+  mqttpassword_=password;
 	return true;
 }
 
@@ -120,4 +115,13 @@ bool FortiThing::subscribeTopic(const String& topic, void (FortiThing::*func)(co
 	return true;
 }
 
-
+bool FortiThing::startBmp()
+{
+   bool status;
+   status = bmp_.begin();  
+   if (!status) {
+      Serial.println("Could not find a valid BMP280 sensor, check wiring!");
+      return false;
+   }
+  return true;
+}

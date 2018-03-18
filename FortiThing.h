@@ -8,23 +8,23 @@
 #include "Arduino.h"
 #include <String>
 
+#include <Adafruit_BMP280.h>
+
 class FortiThing {
 
 public:
 
     FortiThing();
-	virtual ~FortiThing();
+    virtual ~FortiThing();
 
     virtual float readTemperature();
     virtual float readPressure();
     virtual float readHumidity();
 	
-	virtual float readLightSensor();
+    virtual float readLightSensor();
 
     virtual bool setLed(bool);
-
     virtual bool setLedRGB1(int, int, int);
-
     virtual bool setLedRGB2(int, int, int);
 
 
@@ -43,12 +43,15 @@ public:
 private:
 
     //virtual void callback(const char* payload);
-	
-	String ssid;
-	String password;
-  String mqtthost;
-  String mqttuser;
-  String mqttpassword;
+    bool startBmp();
+
+    Adafruit_BMP280 bmp_;
+    
+    String ssid_;
+		String password_;
+		String mqtthost_;
+		String mqttuser_;
+		String mqttpassword_;
 
 };
 

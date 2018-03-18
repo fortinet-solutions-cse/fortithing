@@ -19,6 +19,8 @@ void setup() {
   ftt->connectWifi();
 
   ftt->setMqttHost(mqttServer);
+  ftt->setMqttUserPassword(mqttUser, mqttPassword);
+  
 
   delete ftt;
  
