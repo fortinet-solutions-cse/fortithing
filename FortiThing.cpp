@@ -1,10 +1,11 @@
 #include "FortiThing.h"
 #include <ESP8266WiFi.h>
+#include <PubSubClient.h>
 
 
 FortiThing::FortiThing():
-ssid_(""),password_(""),mqtthost_(""),
-mqttuser_(""),mqttpassword_("")
+ssid_(""),password_(""),mqttServer_(""),
+mqttUser_(""),mqttPassword_("")
 {
 }
 
@@ -22,14 +23,10 @@ float FortiThing::readTemperature()
 
 float FortiThing::readPressure()
 {
-   Adafruit_BMP280 bmp;
-   bool status;
-   status = bmp.begin();  
-   if (!status) {
-      Serial.println("Could not find a valid BMP280 sensor, check wiring!");
-      while (1);
+   if (startBmp())
+   {
+      return bmp_.readPressure(); 
    }
-   return bmp.readPressure();
 }
 
 float FortiThing::readHumidity()
@@ -92,26 +89,39 @@ bool FortiThing::connectWifi()
 }
 
 // MQTT methods
-bool FortiThing::setMqttHost(const String& host)
+bool FortiThing::setMqttServer(const String& server, const int port)
 {
-  mqtthost_=host;
+  mqttServer_ = server;
+  mqttPort_   = port;
 	return true;
 }
 
 bool FortiThing::setMqttUserPassword(const String& user, const String& password)
 {
-  mqttuser_=user;
-  mqttpassword_=password;
+  mqttUser_     = user;
+  mqttPassword_ = password;
 	return true;
 }
 
 bool FortiThing::publishTopic(const String& topic, float value)
 {
-	return true;
-}
-
-bool FortiThing::subscribeTopic(const String& topic, void (FortiThing::*func)(const String& payload))
-{
+  WiFiClient espClient;
+  PubSubClient client(espClient);
+  
+  client.setServer(mqttServer_.c_str(), mqttPort_);
+  while (!client.connected()) {
+    Serial.println("Connecting to MQTT...");
+   if (client.connect("djerufj3843d", mqttUser_.c_str(), mqttPassword_.c_str() )) {
+      Serial.println("connected");  
+    } else {
+     Serial.print("failed with state ");
+      Serial.print(client.state());
+      delay(2000);
+    }
+  }
+  char buff[10]="";
+  sprintf(buff, "%5.2f", value);
+  client.publish(topic.c_str(), buff);
 	return true;
 }
 

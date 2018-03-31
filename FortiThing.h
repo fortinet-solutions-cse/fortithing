@@ -35,10 +35,9 @@ public:
 
 
     // MQTT methods
-    virtual bool setMqttHost(const String& host);
+    virtual bool setMqttServer(const String& server, const int port);
     virtual bool setMqttUserPassword(const String& user, const String& password);
     virtual bool publishTopic(const String& topic, float value);
-    virtual bool subscribeTopic(const String& topic, void (FortiThing::*func)(const String& payload));
 
 private:
 
@@ -49,13 +48,11 @@ private:
     
     String ssid_;
 		String password_;
-		String mqtthost_;
-		String mqttuser_;
-		String mqttpassword_;
+		String mqttServer_;
+		String mqttUser_;
+		String mqttPassword_;
+    int    mqttPort_;
 
 };
-
-
-
 
 #endif //FORTITHING_FORTITHING_H
