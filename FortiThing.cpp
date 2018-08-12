@@ -15,23 +15,26 @@ FortiThing::~FortiThing()
 
 float FortiThing::readTemperature()
 {
-   if (startBmp())
+   if (startBme())
    {
-      return bmp_.readTemperature(); 
+      return bme_.readTemperature(); 
    }
 }
 
 float FortiThing::readPressure()
 {
-   if (startBmp())
+   if (startBme())
    {
-      return bmp_.readPressure(); 
+      return bme_.readPressure(); 
    }
 }
 
 float FortiThing::readHumidity()
 {
-   return 85.2;	
+   if (startBme())
+   {
+      return bme_.readHumidity(); 
+   }
 }
 
 float FortiThing::readLightSensor()
@@ -125,12 +128,12 @@ bool FortiThing::publishTopic(const String& topic, float value)
 	return true;
 }
 
-bool FortiThing::startBmp()
+bool FortiThing::startBme()
 {
    bool status;
-   status = bmp_.begin();  
+   status = bme_.begin();  
    if (!status) {
-      Serial.println("Could not find a valid BMP280 sensor, check wiring!");
+      Serial.println("Could not find a valid BME280 sensor, check wiring!");
       return false;
    }
   return true;

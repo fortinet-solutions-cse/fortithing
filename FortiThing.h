@@ -8,7 +8,7 @@
 #include "Arduino.h"
 #include <String>
 
-#include <Adafruit_BMP280.h>
+#include <Adafruit_BME280.h>
 
 class FortiThing {
 
@@ -42,9 +42,9 @@ public:
 private:
 
     //virtual void callback(const char* payload);
-    bool startBmp();
+    bool startBme();
 
-    Adafruit_BMP280 bmp_;
+    Adafruit_BME280 bme_;
     
     String ssid_;
 		String password_;
