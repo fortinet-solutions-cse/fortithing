@@ -1,17 +1,5 @@
-# fortithing
+# FortiThing
 
-Arduino Utilities to manage FortiThing IoT device
+Samples to run FortiThing board using Arduino IDE C++ or MicroPython.
 
-This is basically a class to simplify usage of FortiThing: 
-
-- Reading values such as temperature, pressure, humidity, etc.
-- Setting values for leds, RGBs, etc
-- Publishing the information in a MQTT server
-- Subscribing to changes in MQTT server
-
-Check 'fortithing.ino' for an illustrative example.
-
-You don't have to worry about internals of FortiThing.[h|cpp].
-
-Enjoy!
-
+Please go to proper folder depending on your preferences and check README.md
