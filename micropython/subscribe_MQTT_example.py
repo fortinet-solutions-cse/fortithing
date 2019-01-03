@@ -5,7 +5,7 @@ client_id = "d:accountid:DeviceType:DeviceId"
 port = 1883
 ssl = False
 user = "use-token-auth"
-password = "Aw(X9vI)MMFRLxvjDO"
+password = "mypassword"
 
 
 def sub_cb(topic, msg):
