@@ -50,27 +50,35 @@ def sub_cb(topic, msg):
 
 
 def connect():
-    print("Connecting WiFi and MQTT Client")
-    sta_if = network.WLAN(network.STA_IF)
-    ap_if = network.WLAN(network.AP_IF)
+    try:
+        print("Connecting WiFi and MQTT Client")
+        sta_if = network.WLAN(network.STA_IF)
+        ap_if = network.WLAN(network.AP_IF)
 
-    ap_if.active(False)  # Deactivate Access Point
-    sta_if.active(True)  # Activate Station interface
+        ap_if.active(False)  # Deactivate Access Point
+        sta_if.active(True)  # Activate Station interface
 
-    sta_if.connect(wifi_essid, wifi_password)
+        sta_if.connect(wifi_essid, wifi_password)
 
-    while not sta_if.isconnected():
-        pass
+        count = 0
+        while not sta_if.isconnected() and count < 60:
+            sleep(0.5)
+            count += 1
 
-    global c
-    c = MQTTClient(client_id=client_id, server=server, port=port, ssl=ssl, user=user, password=password)
-    c.set_callback(sub_cb)
-    c.connect()
+        if count >= 60:
+            raise Exception
 
-    c.subscribe("iot-2/cmd/switch_rgb_lights/fmt/json")
-    c.subscribe("iot-2/cmd/set_left_rgb_light_color/fmt/json")
-    c.subscribe("iot-2/cmd/set_right_rgb_light_color/fmt/json")
-    c.subscribe("iot-2/cmd/set_led/fmt/json")
+        global c
+        c = MQTTClient(client_id=client_id, server=server, port=port, ssl=ssl, user=user, password=password)
+        c.set_callback(sub_cb)
+        c.connect()
+
+        c.subscribe("iot-2/cmd/switch_rgb_lights/fmt/json")
+        c.subscribe("iot-2/cmd/set_left_rgb_light_color/fmt/json")
+        c.subscribe("iot-2/cmd/set_right_rgb_light_color/fmt/json")
+        c.subscribe("iot-2/cmd/set_led/fmt/json")
+    except:
+        print("Exception occurred when connecting.")
 
 
 def loop():
@@ -79,8 +87,7 @@ def loop():
     try:
         while 1:
             global c
-            ret = c.check_msg()
-            print("*"+str(ret))
+            c.check_msg()
             sleep(0.1)
 
             if button is False and Pin(13, Pin.IN, Pin.PULL_UP).value():
@@ -104,8 +111,8 @@ def loop():
 
             count += 1
 
-    finally:
-            print("Exception occurred.")
+    except:
+            print("Exception occurred in loop.")
 
 while True:
     connect()
