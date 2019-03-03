@@ -1,4 +1,4 @@
-import bme280_float, neopixel, network 
+import bme280_float, neopixel, network, ssd1306
 from simple import MQTTClient
 from time import sleep
 from machine import Pin, I2C, ADC
@@ -19,7 +19,19 @@ adc = ADC(0)
 np = neopixel.NeoPixel(Pin(14), 2)
 blueled = Pin(16, Pin.OUT)
 blueled.off()
+oled = ssd1306.SSD1306_I2C(128, 64, i2c, 0x3c)
 c = None
+
+
+def screen(*argv):
+    oled.fill(0)
+    oled.text(argv[0], 0, 0)
+
+    index = 0
+    for arg in argv[1:]:
+        oled.text(arg, 0, index*12 + 20)
+        index += 1
+    oled.show()
 
 
 def sub_cb(topic, msg):
@@ -52,6 +64,7 @@ def sub_cb(topic, msg):
 def connect():
     try:
         print("Connecting WiFi and MQTT Client")
+        screen("Status", "Connecting WiFi", "and MQTT Client")
         sta_if = network.WLAN(network.STA_IF)
         ap_if = network.WLAN(network.AP_IF)
 
@@ -66,6 +79,8 @@ def connect():
             count += 1
 
         if count >= 60:
+            print("More than 60 attemps to connect to wifi")
+            screen("Error", "WiFi connection failed", "More than 60 attemps")
             raise Exception
 
         global c
@@ -79,6 +94,7 @@ def connect():
         c.subscribe("iot-2/cmd/set_led/fmt/json")
     except:
         print("Exception occurred when connecting.")
+        screen("Error", "Exception occurred", "when connecting")
 
 
 def loop():
@@ -107,12 +123,16 @@ def loop():
                 c.publish("iot-2/evt/pressure/fmt/json", '{{ "p":{:.2f} }}'.format(p/100))
                 c.publish("iot-2/evt/humidity/fmt/json", '{{ "h":{:.2f} }}'.format(h))
                 c.publish("iot-2/evt/light_sensor/fmt/json", '{{ "l":{:.2f} }}'.format(adc.read()))
+                screen("Weather data", "Temp: {:.2f} C".format(t),
+                       "Pres: {:.2f} hPa".format(p/100),
+                       "Humi: {:.2f} %".format(h))
                 count = 0
 
             count += 1
 
     except:
             print("Exception occurred in loop.")
+            screen("Error", "Exception occurred", "in main loop")
 
 while True:
     connect()
