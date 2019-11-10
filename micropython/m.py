@@ -2,7 +2,7 @@ from time import sleep
 
 from fortithing import FortiThing
 
-DATA_DELETED******
+from credentials import wifi_essid, wifi_password, server, client_id, port, ssl, user, password
 
 ft = FortiThing()
 
@@ -43,16 +43,17 @@ def loop():
                 button = False
                 ft.mqtt_publish("iot-2/evt/switch/fmt/json", str(not button))
 
-            if count == 30:
+            if count == 50:
                 result = ft.get_tph()
                 t = result[0]
                 p = result[1]
                 h = result[2]
+                adc = ft.get_adc()
                 print(str(t) + str(p) + str(h))
                 ft.mqtt_publish("iot-2/evt/temp/fmt/json", '{{ "t":{:.2f} }}'.format(t))
                 ft.mqtt_publish("iot-2/evt/pressure/fmt/json", '{{ "p":{:.2f} }}'.format(p/100))
                 ft.mqtt_publish("iot-2/evt/humidity/fmt/json", '{{ "h":{:.2f} }}'.format(h))
-                ft.mqtt_publish("iot-2/evt/light_sensor/fmt/json", '{{ "l":{:.2f} }}'.format(adc.read()))
+                ft.mqtt_publish("iot-2/evt/light_sensor/fmt/json", '{{ "l":{:.2f} }}'.format(adc))
                 ft.screen("Weather data", "Temp: {:.2f} C".format(t),
                        "Pres: {:.2f} hPa".format(p/100),
                        "Humi: {:.2f} %".format(h))
@@ -62,7 +63,7 @@ def loop():
 
     except Exception as e:
         print("Exception occurred in loop..")
-        print(e)
+        print("Value: " + str(e))
         ft.screen("Error", "Exception occurred", "in loop")
             
 

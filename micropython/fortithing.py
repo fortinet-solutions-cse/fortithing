@@ -19,6 +19,7 @@ class FortiThing(object):
     ####################################
     
     def screen(self, *argv):
+        print(argv)
         self._oled.fill(0)
         self._oled.text(argv[0], 0, 0)
 
@@ -45,13 +46,15 @@ class FortiThing(object):
     def get_tph(self):
         return self._bme.read_compensated_data()
 
+    def get_adc(self):
+        return self._adc.read()
+
     ####################################
     # Wifi connectivity
     ####################################
 
     def wifi_connect(self, wifi_essid, wifi_password):
         try:
-            print("Connecting WiFi")
             self.screen("Status", "Connecting WiFi")
             sta_if = network.WLAN(network.STA_IF)
             ap_if = network.WLAN(network.AP_IF)
@@ -67,15 +70,14 @@ class FortiThing(object):
                 count += 1
 
             if count >= 60:
-                print("More than 60 attemps to connect to wifi")
                 self.screen("Error", "WiFi connection failed", "More than 60 attemps")
                 raise Exception
 
-            print("WiFi connected")
+            self.screen("Status", "WiFi Connected")
 
         except Exception as e:
             print("Exception occurred when connecting.")
-            print(e)
+            print("Values: " + str(e))
             self.screen("Error", "Exception occurred", "when connecting")
 
     ####################################
@@ -83,12 +85,17 @@ class FortiThing(object):
     ####################################
 
     def mqtt_connect(self, client_id, server, port, ssl, user, password, sub_cb):
+        self.screen("Status", "MQTT Connecting")
         self._mqttClient = MQTTClient(client_id=client_id, server=server, port=port, ssl=ssl, user=user, password=password)
         self._mqttClient.set_callback(sub_cb)
         self._mqttClient.connect()
+        self.screen("Status", "MQTT Connected")
+           
 
     def mqtt_subscribe(self, path):
+        self.screen("Status", "Subscribing topic")
         self._mqttClient.subscribe(path)
+        self.screen("Status", "Topic Subscribed")
 
 
     def mqtt_publish(self, path, value):
