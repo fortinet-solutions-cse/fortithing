@@ -7,7 +7,7 @@ from credentials import wifi_essid, wifi_password, server, client_id, port, ssl,
 ft = FortiThing()
 
 
-def sub_cb(topic, msg):
+def subscribe_callback(topic, msg):
     print((topic, msg))
     if 'switch_rgb_lights' in topic:
         light_value = int(msg) * 255
@@ -43,17 +43,26 @@ def loop():
                 button = False
                 ft.mqtt_publish("iot-2/evt/switch/fmt/json", str(not button))
 
-            if count == 50:
+            if count == 50: # Every 50 iterations of the loop, i.e. 5 secs, publish data
                 result = ft.get_tph()
                 t = result[0]
                 p = result[1]
                 h = result[2]
                 adc = ft.get_adc()
-                print(str(t) + str(p) + str(h))
-                ft.mqtt_publish("iot-2/evt/temp/fmt/json", '{{ "t":{:.2f} }}'.format(t))
-                ft.mqtt_publish("iot-2/evt/pressure/fmt/json", '{{ "p":{:.2f} }}'.format(p/100))
-                ft.mqtt_publish("iot-2/evt/humidity/fmt/json", '{{ "h":{:.2f} }}'.format(h))
-                ft.mqtt_publish("iot-2/evt/light_sensor/fmt/json", '{{ "l":{:.2f} }}'.format(adc))
+
+                env_json = { 't': '{:.2f}'.format(t),
+                             'p': '{:.2f}'.format(p/100),
+                             'h': '{:.2f}'.format(h),
+                             'l': '{:.2f}'.format(adc)}
+                ft.mqtt_publish("iot-2/evt/environmental/fmt/json", str(env_json))
+
+                # Alternatively use next lines to send 4 separate messages
+                #
+                # ft.mqtt_publish("iot-2/evt/temp/fmt/json", '{{ "t":{:.2f} }}'.format(t))
+                # ft.mqtt_publish("iot-2/evt/pressure/fmt/json", '{{ "p":{:.2f} }}'.format(p/100))
+                # ft.mqtt_publish("iot-2/evt/humidity/fmt/json", '{{ "h":{:.2f} }}'.format(h))
+                # ft.mqtt_publish("iot-2/evt/light_sensor/fmt/json", '{{ "l":{:.2f} }}'.format(adc))
+
                 ft.screen("Weather data", "Temp: {:.2f} C".format(t),
                        "Pres: {:.2f} hPa".format(p/100),
                        "Humi: {:.2f} %".format(h))
@@ -63,13 +72,13 @@ def loop():
 
     except Exception as e:
         print("Exception occurred in loop..")
-        print("Value: " + str(e))
+        print("Exception: " + str(e))
         ft.screen("Error", "Exception occurred", "in loop")
             
 
 while True:
     ft.wifi_connect(wifi_essid, wifi_password)
-    ft.mqtt_connect(client_id, server, port, ssl, user, password, sub_cb)
+    ft.mqtt_connect(client_id, server, port, ssl, user, password, subscribe_callback)
     ft.mqtt_subscribe("iot-2/cmd/switch_rgb_lights/fmt/json")
     ft.mqtt_subscribe("iot-2/cmd/set_left_rgb_light_color/fmt/json")
     ft.mqtt_subscribe("iot-2/cmd/set_right_rgb_light_color/fmt/json")

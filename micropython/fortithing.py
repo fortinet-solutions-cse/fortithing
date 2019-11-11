@@ -11,8 +11,15 @@ class FortiThing(object):
         self._np = neopixel.NeoPixel(Pin(14), 2)
         self._blueled = Pin(16, Pin.OUT)
         self._blueled.off()
-        self._oled = ssd1306.SSD1306_I2C(128, 64, self._i2c, 0x3c)
         self._mqttClient = None
+        try:
+            self._oled = ssd1306.SSD1306_I2C(128, 64, self._i2c, 0x3c)
+        except Exception as e:
+            self._oled = None
+            print("Exception occurred when initializing OLED.")
+            print("Exception: " + str(e))
+
+
 
     ####################################
     # Basic hardware operations
@@ -20,14 +27,17 @@ class FortiThing(object):
     
     def screen(self, *argv):
         print(argv)
-        self._oled.fill(0)
-        self._oled.text(argv[0], 0, 0)
+        try:
+            self._oled.fill(0)
+            self._oled.text(argv[0], 0, 0)
 
-        index = 0
-        for arg in argv[1:]:
-            self._oled.text(arg, 0, index*12 + 20)
-            index += 1
-        self._oled.show()
+            index = 0
+            for arg in argv[1:]:
+                self._oled.text(arg, 0, index*12 + 20)
+                index += 1
+            self._oled.show()
+        except Exception as e:
+            pass
     
     def set_left_rgb_light(self, red, green, blue):
         self._np[0] = (red, green, blue)
@@ -77,7 +87,7 @@ class FortiThing(object):
 
         except Exception as e:
             print("Exception occurred when connecting.")
-            print("Values: " + str(e))
+            print("Exception: " + str(e))
             self.screen("Error", "Exception occurred", "when connecting")
 
     ####################################
