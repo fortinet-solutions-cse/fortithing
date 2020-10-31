@@ -1,15 +1,19 @@
 import bme280_float, neopixel, network, ssd1306
-from machine import Pin, I2C, ADC
+from machine import Pin, I2C, ADC, freq, TouchPad
+from lis3dh import LIS3DH_I2C
 from simple import MQTTClient
 from time import sleep
 
 class FortiThing(object):
     def __init__(self):
-        self._i2c = I2C(scl=Pin(5), sda=Pin(4), freq=400000)
+        freq(240000000)
+        self._i2c = I2C(scl=Pin(22), sda=Pin(21), freq=100000)
         self._bme = bme280_float.BME280(i2c=self._i2c)
-        self._adc = ADC(0)
-        self._np = neopixel.NeoPixel(Pin(14), 2)
-        self._blueled = Pin(16, Pin.OUT)
+        self._adc = ADC(Pin(37))
+        self._lis3dh = lis3dh=LIS3DH_I2C(i2c,address=0x19, int1=Pin(15))
+        self._touchPad = TouchPad(Pin(14))
+        # self._np = neopixel.NeoPixel(Pin(14), 2)
+        self._blueled = Pin(4, Pin.OUT)
         self._blueled.off()
         self._mqttClient = None
         try:
@@ -51,13 +55,19 @@ class FortiThing(object):
         self._blueled.on() if led_on == 1 or led_on else self._blueled.off()
 
     def get_switch_status(self):
-        return Pin(13, Pin.IN, Pin.PULL_UP).value()
+        return not Pin(18, Pin.IN, Pin.PULL_UP).value()
 
     def get_tph(self):
         return self._bme.read_compensated_data()
 
     def get_adc(self):
         return self._adc.read()
+    
+    def get_touchpad(self):
+        return (self._touchPad.read()-400)/3
+
+    def get_acceleration(self):
+        return self._lis3dh.acceleration()
 
     ####################################
     # Wifi connectivity
