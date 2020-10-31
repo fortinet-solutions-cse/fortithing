@@ -54,12 +54,16 @@ def loop():
                 h = result[2]
                 adc = ft.get_adc()
                 touchpad = ft.get_touchpad()
+                x, y, z = ft.get_acceleration()
 
                 env_json = { 'temperature': '{:.2f}'.format(t),
                              'pressure': '{:.2f}'.format(p/100),
                              'humidity': '{:.2f}'.format(h),
                              'light': '{:.2f}'.format(adc),
-                             'touchpad': '{:.2f}'.format(touchpad)
+                             'touchpad': '{:.2f}'.format(touchpad),
+                             'x': '{:.2f}'.format(x),
+                             'y': '{:.2f}'.format(y),
+                             'z': '{:.2f}'.format(z)
                              }
                 ft.mqtt_publish("v1/devices/me/telemetry", str(env_json))
 
@@ -67,7 +71,11 @@ def loop():
                        "Pres: {:.2f} hPa".format(p/100),
                        "Humi: {:.2f} %".format(h),
                        "Light: {:.2f}".format(adc),
-                       "TouchPad: {:.2f}".format(touchpad))
+                       "TouchPad: {:.2f}".format(touchpad),
+                       "x: {:.2f}".format(x),
+                       "y: {:.2f}".format(y),
+                       "z: {:.2f}".format(z))
+                       
                 count = 0
 
             count += 1

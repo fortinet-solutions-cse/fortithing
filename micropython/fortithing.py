@@ -10,7 +10,7 @@ class FortiThing(object):
         self._i2c = I2C(scl=Pin(22), sda=Pin(21), freq=100000)
         self._bme = bme280_float.BME280(i2c=self._i2c)
         self._adc = ADC(Pin(37))
-        self._lis3dh = lis3dh=LIS3DH_I2C(i2c,address=0x19, int1=Pin(15))
+        self._lis3dh = lis3dh=LIS3DH_I2C(self._i2c,address=0x19, int1=Pin(15))
         self._touchPad = TouchPad(Pin(14))
         # self._np = neopixel.NeoPixel(Pin(14), 2)
         self._blueled = Pin(4, Pin.OUT)
@@ -67,7 +67,7 @@ class FortiThing(object):
         return (self._touchPad.read()-400)/3
 
     def get_acceleration(self):
-        return self._lis3dh.acceleration()
+        return self._lis3dh.acceleration
 
     ####################################
     # Wifi connectivity
