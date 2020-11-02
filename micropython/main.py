@@ -12,26 +12,22 @@ ft = FortiThing()
 
 def subscribe_callback(topic, msg):
     print((topic, msg))
-    data=loads(msg)
-    method=data['method']
-    params=data['params']
-
-    if 'switch_rgb_lights' in method:
-        light_value = int(msg) * 255
-        ft.set_left_rgb_light(light_value, light_value, light_value)
-        ft.set_right_rgb_light(light_value, light_value, light_value)
-    elif 'set_left_rgb_light_color' in method:
-        value = msg.decode('utf-8').lstrip('#')
-        lv = len(value)
-        r, g, b = tuple(int(value[i:i + lv // 3], 16) for i in range(0, lv, lv // 3))
-        ft.set_left_rgb_light(r, g, b)
-    elif 'set_right_rgb_light_color' in method:
-        value = msg.decode('utf-8').lstrip('#')
-        lv = len(value)
-        r, g, b = tuple(int(value[i:i + lv // 3], 16) for i in range(0, lv, lv // 3))
-        ft.set_right_rgb_light(r, g, b)
-    elif 'set_led' in method:
-        ft.set_led(params)
+    try: 
+        if 'set' in msg:
+            data=loads(msg)
+            method=data['method']
+            params=data['params']
+            if 'set_led' in method:
+                led_number = int(method[7])
+                color_component = method[9:]
+                ft.set_led_array(led_number, color_component, params)
+            elif 'set_blue_led' in method:
+                ft.set_blue_led(params)
+    except Exception as e:
+        print("Exception occurred in subscribe callback")
+        print("Exception: " + str(e))
+        sys.print_exception(e)
+        ft.screen("Error", "Exception occurred", "in subscribe callback")  
 
 
 def loop():
@@ -89,5 +85,5 @@ def loop():
 while True:
     ft.wifi_connect(wifi_essid, wifi_password)
     ft.mqtt_connect(client_id, server, port, ssl, user, password, subscribe_callback)
-    #ft.mqtt_subscribe("v1/devices/me/rpc/request/+")
+    ft.mqtt_subscribe("v1/devices/me/rpc/request/+")
     loop()
